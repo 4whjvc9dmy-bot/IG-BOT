@@ -1,54 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accounts Panel</title>
+
 <style>
-body{background:#0f0f0f;color:#fff;font-family:sans-serif;padding:20px}
-input,textarea,button{width:100%;margin:10px 0;padding:12px;border-radius:12px;border:none}
-button{background:#ff2d55;color:#fff;font-weight:bold}
-h2{text-align:center}
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f0f0f;
+  color: white;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  margin-bottom: 15px;
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+input, select {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #4f46e5;
+  color: white;
+}
+
+.accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1a1a1a;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.online { border-left: 4px solid #22c55e; }
+.offline { border-left: 4px solid #ef4444; }
+
+.status {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.danger {
+  background: #ef4444;
+}
 </style>
 </head>
+
 <body>
 
-<h2>IG BOT</h2>
+<div class="container">
 
-<input id="u" placeholder="login">
-<input id="p" placeholder="password">
-<button onclick="add()">Add account</button>
+  <h2>📱 Accounts Panel</h2>
 
-<input type="file" id="f">
-<button onclick="up()">Upload video</button>
+  <div class="form">
+    <input id="name" placeholder="Username">
+    <input id="platform" placeholder="Platform (Instagram, TG...)">
 
-<textarea id="t" placeholder="#hashtags"></textarea>
-<button onclick="save()">Save hashtags</button>
+    <select id="status">
+      <option value="online">Online</option>
+      <option value="offline">Offline</option>
+    </select>
 
-<button onclick="start()">▶ Start</button>
+    <button onclick="addAccount()">Добавить</button>
+  </div>
+
+  <div class="accounts" id="list"></div>
+
+</div>
 
 <script>
-async function add(){
- await fetch("/accounts",{method:"POST",headers:{"Content-Type":"application/json"},
- body:JSON.stringify({username:u.value,password:p.value})})
- alert("account added")
+let accounts = JSON.parse(localStorage.getItem("accounts")) || [];
+
+function save() {
+  localStorage.setItem("accounts", JSON.stringify(accounts));
 }
 
-async function up(){
- let fd=new FormData()
- fd.append("video",f.files[0])
- await fetch("/upload",{method:"POST",body:fd})
- alert("video uploaded")
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  accounts.forEach((acc, i) => {
+    const div = document.createElement("div");
+    div.className = `account ${acc.status}`;
+
+    div.innerHTML = `
+      <div>
+        <div><b>${acc.platform}: ${acc.name}</b></div>
+        <div class="status">${acc.status}</div>
+      </div>
+
+      <div class="actions">
+        <button onclick="toggle(${i})">Switch</button>
+        <button class="danger" onclick="removeAcc(${i})">Delete</button>
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
 }
 
-async function save(){
- await fetch("/hashtags",{method:"POST",headers:{"Content-Type":"application/json"},
- body:JSON.stringify({hashtags:t.value})})
- alert("saved")
+function addAccount() {
+  const name = document.getElementById("name").value;
+  const platform = document.getElementById("platform").value;
+  const status = document.getElementById("status").value;
+
+  if (!name || !platform) return;
+
+  accounts.push({ name, platform, status });
+
+  save();
+  render();
 }
 
-async function start(){
- await fetch("/start",{method:"POST"})
- alert("started")
+function removeAcc(i) {
+  accounts.splice(i, 1);
+  save();
+  render();
 }
+
+function toggle(i) {
+  accounts[i].status = accounts[i].status === "online" ? "offline" : "online";
+  save();
+  render();
+}
+
+render();
 </script>
 
 </body>
