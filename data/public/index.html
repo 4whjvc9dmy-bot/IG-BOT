@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{background:#0f0f0f;color:#fff;font-family:sans-serif;padding:20px}
+input,textarea,button{width:100%;margin:10px 0;padding:12px;border-radius:10px;border:none}
+button{background:#ff2d55;color:#fff;font-weight:bold}
+</style>
+</head>
+<body>
+
+<h2>IG BOT</h2>
+
+<input id="u" placeholder="логин">
+<input id="p" placeholder="пароль">
+<button onclick="add()">Добавить</button>
+
+<input type="file" id="f">
+<button onclick="up()">Загрузить видео</button>
+
+<textarea id="t" placeholder="#hashtags"></textarea>
+<button onclick="save()">Сохранить</button>
+
+<button onclick="start()">▶️ Старт</button>
+
+<script>
+async function add(){
+ await fetch("/accounts",{method:"POST",headers:{"Content-Type":"application/json"},
+ body:JSON.stringify({username:u.value,password:p.value})})
+ alert("ok")
+}
+async function up(){
+ let fd=new FormData()
+ fd.append("video",f.files[0])
+ await fetch("/upload",{method:"POST",body:fd})
+ alert("uploaded")
+}
+async function save(){
+ await fetch("/hashtags",{method:"POST",headers:{"Content-Type":"application/json"},
+ body:JSON.stringify({hashtags:t.value})})
+}
+async function start(){
+ await fetch("/start",{method:"POST"})
+ alert("started")
+}
+</script>
+
+</body>
+</html>
